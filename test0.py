@@ -5,7 +5,7 @@ import numpy.linalg as la
 import collections
 import sys
 
-count=200
+count=100
 align=16 # alignment for Mat33
 N=count*16
 
@@ -59,7 +59,7 @@ for test in tests:
 	prg=cl.Program(ctx,'''
 		#include"basic-math.cl"
 		kernel void test(global %s *c, global const %s *a, global const %s *b){ int gid=get_global_id(0); %s; }
-	'''%(test.outType,test.inTypes[0] if test.inTypes[0] else 'Vec3',test.inTypes[1] if test.inTypes[1] else 'Vec3',test.clCode)).build()
+	'''%(test.outType,test.inTypes[0] if test.inTypes[0] else 'Vec3',test.inTypes[1] if test.inTypes[1] else 'Vec3',test.clCode)).build(options="-I.")
 	prg.test(queue,(a.shape[0]/align,),None,cBuf,aBuf,bBuf) # we pass uselessly aBuf, bBuf even if they are unused
 	c=numpy.empty_like(a) # result will be copied in here
 	cl.enqueue_read_buffer(queue,cBuf,c).wait() # compute, wait and copy back
