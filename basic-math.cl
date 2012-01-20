@@ -27,6 +27,7 @@ Mat3 Mat3_identity(){ return Mat3_setDiag((Vec3)1.); }
 // operations
 Mat3 Mat3_transpose(Mat3 m){ return Mat3_setRows(Mat3_col(m,0),Mat3_col(m,1),Mat3_col(m,2)); }
 double Mat3_trace(Mat3 m){ return Mat3_at(m,0,0)+Mat3_at(m,1,1)+Mat3_at(m,2,2); }
+double Mat3_det(Mat3 m);
 // matrix-vector multiply
 Vec3 Mat3_multV(Mat3 a, Vec3 b){	return (Vec3)(dot(Mat3_row(a,0),b),dot(Mat3_row(a,1),b),dot(Mat3_row(a,2),b)); }
 // matrix-matrix multiply
@@ -51,6 +52,25 @@ Vec3 Vec3_zero() { return (Vec3)(0,0,0); }
 double Vec3_sqNorm(Vec3 v){ return dot(v,v); }
 
 /* non-trivial implementations */
+
+Mat3 Mat3_inv(Mat3 m){
+	#define _M(i,j) Mat3_at(m,i,j)
+	return (1/Mat3_det(m))*Mat3_set(
+		+_M(2,2)*_M(1,1)-_M(2,1)*_M(1,2), -_M(2,2)*_M(0,1)+_M(2,1)*_M(0,2), +_M(1,2)*_M(0,1)-_M(1,1)*_M(0,2),
+		-_M(2,2)*_M(1,0)+_M(2,0)*_M(1,2), +_M(2,2)*_M(0,0)-_M(2,0)*_M(0,2), -_M(1,2)*_M(0,0)+_M(1,0)*_M(0,2),
+		+_M(2,1)*_M(1,0)-_M(2,0)*_M(1,1), -_M(2,1)*_M(0,0)+_M(2,0)*_M(0,1), +_M(1,1)*_M(0,0)-_M(1,0)*_M(0,1)
+	);
+	#undef _M
+}
+double Mat3_det(Mat3 m){
+	return
+		+Mat3_at(m,0,0)*Mat3_at(m,1,1)*Mat3_at(m,2,2)
+		+Mat3_at(m,0,1)*Mat3_at(m,1,2)*Mat3_at(m,2,0)
+		+Mat3_at(m,0,2)*Mat3_at(m,1,0)*Mat3_at(m,2,1)
+		-Mat3_at(m,0,0)*Mat3_at(m,1,2)*Mat3_at(m,2,1)
+		-Mat3_at(m,0,1)*Mat3_at(m,1,0)*Mat3_at(m,2,2)
+		-Mat3_at(m,0,2)*Mat3_at(m,1,1)*Mat3_at(m,2,0);
+}
 
 Mat3 Mat3_multM(Mat3 a, Mat3 b){
 	Vec3 ar0=Mat3_row(a,0),ar1=Mat3_row(a,1),ar2=Mat3_row(a,2);

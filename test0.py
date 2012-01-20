@@ -4,15 +4,17 @@ import numpy
 import numpy.linalg as la
 import collections, math, sys
 
+# should be adjusted according to installation path
 sys.path.append('/usr/local/lib/yade-tr2/py')
 from miniEigen import *
 
-count=200
+count=2000
+
 align=16 # alignment for Mat3
 N=count*16
 
 
-# convert flat buffer to numpy tupe, according to type 
+# convert flat buffer to miniEigen object, according to type 
 def toNumpy(typeName,vec,i):
 	if typeName==None: return None
 	if typeName=='Vec3': return Vector3(vec[i*4],vec[i*4+1],vec[i*4+2])
@@ -75,13 +77,12 @@ tests=[
 	CLTest('Quat_toMat3','Mat3',('Quat',None),'c=Quat_toMat3(normalize(a))', lambda a,b: a.normalized().toRotationMatrix()),
 	CLTest('Quat_rotate','Vec3',('Quat','Vec3'),'c=Quat_rotate(normalize(a),b);', lambda a,b: a.normalized().Rotate(b)),
 	CLTest('Quat_multQ','Quat',('Quat','Quat'),'c=Quat_multQ(normalize(a),normalize(b));', lambda a,b: a.normalized()*b.normalized()),
+	#
+	CLTest('Mat3_det','double',('Mat3',None),'c=Mat3_det(a)',lambda a,b: a.determinant()),
+	CLTest('Mat3_inv','Mat3',('Mat3',None),'c=Mat3_inv(a)',lambda a,b: a.inverse()),
 ]
 
-#tests=tests[-4:]
-
-
-
-
+#tests=tests[-1:]
 
 for test in tests:
 	print 20*'=',test.name,20*'='
@@ -99,10 +100,12 @@ for test in tests:
 		C=toNumpy(test.outType,c,i)
 		D=test.numpyFunc(A,B) # call numpy on the args
 		# all elements exactly the same
-		if C==D: sys.stdout.write('.')
+		if C==D:
+			if i%100==0: sys.stdout.write('.')
 		else:
-			relErr=((C-D).norm()/C.norm())
-			if relErr<1e-14:  sys.stdout.write(':')
+			if C.__class__==float: relErr=(C-D)/C
+			else: relErr=((C-D).norm()/C.norm())
+			if relErr<3e-14:  sys.stdout.write(':')
 			elif relErr<1e-8: sys.stdout.write('[%g]'%relErr)
 			else:
 				print 20*'@','error (relative %g)'%relErr
