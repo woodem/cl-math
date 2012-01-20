@@ -2,8 +2,10 @@
 #pragma OPENCL EXTENSION cl_khr_fp64: enable
 
 typedef double3  Vec3;
+// x,y,z,w order
 typedef double4  Quat;
-typedef double16 Mat3; // wasting some bytes here
+// row-major storage; wasting some bytes here
+typedef double16 Mat3; 
 
 
 // 3x3 matrices are row-major (can be changed as long as accessors are used consistently)
@@ -77,8 +79,9 @@ Quat Mat3_toQuat(Mat3 rot){
 	double t=Mat3_trace(rot);
 	Quat q;
 	if(t>0){
-		t=sqrt(t+1);
+		t=sqrt(t+1.);
 		q.w=.5*t;
+		t=.5/t;
 		q.x=(Mat3_at(rot,2,1)-Mat3_at(rot,1,2))*t;
 		q.y=(Mat3_at(rot,0,2)-Mat3_at(rot,2,0))*t;
 		q.z=(Mat3_at(rot,1,0)-Mat3_at(rot,0,1))*t;
@@ -91,8 +94,8 @@ Quat Mat3_toQuat(Mat3 rot){
 		((double*)&q)[i]=.5*t;
 		t=.5/t;
 		q.w=(Mat3_at(rot,k,j)-Mat3_at(rot,j,k))*t;
-		((double*)&q)[j]=(Mat3_at(rot,j,i)+Mat3_at(rot,i,j));
-		((double*)&q)[k]=(Mat3_at(rot,k,i)+Mat3_at(rot,i,k));
+		((double*)&q)[j]=(Mat3_at(rot,j,i)+Mat3_at(rot,i,j))*t;
+		((double*)&q)[k]=(Mat3_at(rot,k,i)+Mat3_at(rot,i,k))*t;
 	}
 	return q;
 }
@@ -110,4 +113,13 @@ Vec3 Quat_rotate(Quat q, Vec3 v){
 	Vec3 uv=2*cross(q.xyz,v);
 	return v+q.w*uv+cross(q.xyz,uv);
 }
+
+Quat Quat_multQ(Quat a, Quat b){
+	return (Quat)(
+		a.w*b.x+a.x*b.w+a.y*b.z-a.z*b.y,
+		a.w*b.y+a.y*b.w+a.z*b.x-a.x*b.z,
+		a.w*b.z+a.z*b.w+a.x*b.y-a.y*b.x,
+		a.w*b.w-a.x*b.x-a.y*b.y-a.z*b.z
+	);
+}	
 
