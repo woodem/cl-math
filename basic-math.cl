@@ -1,6 +1,25 @@
 /*  vim:set syntax=c: */
-#pragma OPENCL EXTENSION cl_khr_fp64: enable
+#ifndef _BASIC_MATH_CL_
+#define _BASIC_MATH_CL_
 
+#ifndef __OPENCL_VERSION__
+	// only types when included from host code
+	#include<math.h>
+	#include<CL/cl.h>
+	#include<CL/cl_platform.h>
+	typedef cl_double Real;
+	typedef cl_double3 Vec3;
+	typedef cl_double4 Quat;
+	typedef cl_double16 Mat3;
+	// for initializing stuff in ctors from host code
+	Vec3 Vec3_set(Real x, Real y, Real z){ Vec3 ret={x,y,z}; return ret; }
+	Mat3 Mat3_set(Real a, Real b, Real c, Real d, Real e, Real f, Real g, Real h, Real i){ Mat3 ret={a,b,c,d,e,f,g,h,i}; return ret; }
+	Mat3 Mat3_identity(){ return Mat3_set(1,0,0,0,1,0,0,0,1); }
+	Quat Quat_identity(){ Quat ret={0,0,0,1}; return ret; }
+#else
+#pragma OPENCL EXTENSION cl_khr_fp64: enable
+// do we need this?
+typedef double Real;
 typedef double3  Vec3;
 // x,y,z,w order
 typedef double4  Quat;
@@ -34,6 +53,8 @@ Vec3 Mat3_multV(Mat3 a, Vec3 b){	return (Vec3)(dot(Mat3_row(a,0),b),dot(Mat3_row
 Mat3 Mat3_multM(Mat3 a, Mat3 b); // impl below
 // Gram-Schmidt orthonormalization with stable 0th column
 Mat3 Mat3_orthonorm_c0(Mat3);  // impl below
+// set rotation matrix from local x-axis and orient the other two arbitrarily (aligned with global axes)
+Mat3 Mat3_rot_setYZ(Vec3 locX);
 
 // http://en.wikipedia.org/wiki/Outer_product
 Mat3 Vec3_outer(Vec3 a, Vec3 b){ return Mat3_set(a.s0*b.s0,a.s0*b.s1,a.s0*b.s2,a.s1*b.s0,a.s1*b.s1,a.s1*b.s2,a.s2*b.s0,a.s2*b.s1,a.s2*b.s2); }
@@ -42,6 +63,10 @@ Quat Quat_identity(){ return (Quat)(0,0,0,1); }
 Quat Quat_conjugate(Quat q){ return (Quat)(-q.x,-q.y,-q.z,q.w); }
 Quat Mat3_toQuat(Mat3 rot); // impl below
 Vec3 Quat_rotate(Quat q, Vec3 v);
+Quat Quat_fromAngleAxis(double angle, Vec3 axis);
+Quat Quat_fromRotVec(Vec3 rot){ double n=length(rot); return Quat_fromAngleAxis(n,rot/n); }
+void Quat_toAngleAxis(Quat q, double* angle, Vec3* axis);
+Vec3 Quat_toRotVec(Quat q){ double angle; Vec3 axis; Quat_toAngleAxis(q,&angle,&axis); return angle*axis; }
 
 Vec3 Vec3_unitX(){ return (Vec3)(1,0,0); }
 Vec3 Vec3_unitY(){ return (Vec3)(0,1,0); }
@@ -50,6 +75,8 @@ Vec3 Vec3_unit(ushort i){ return (i==0?Vec3_unitX():(i==1?Vec3_unitY():Vec3_unit
 Vec3 Vec3_zero() { return (Vec3)(0,0,0); }
 
 double Vec3_sqNorm(Vec3 v){ return dot(v,v); }
+
+
 
 /* non-trivial implementations */
 
@@ -128,6 +155,12 @@ Mat3 Mat3_orthonorm_c0(Mat3 m){
 	return Mat3_setCols(x,y,cross(x,y));
 }
 
+Mat3 Mat3_rot_setYZ(Vec3 locX){
+	Vec3 locY=(fabs(locX.y)<fabs(locX.z))?Vec3_unitY():Vec3_unitZ();
+	locY-=locX*dot(locX,locY);
+	return Mat3_setCols(locX,locY,cross(locX,locY));
+}
+
 
 Vec3 Quat_rotate(Quat q, Vec3 v){
 	Vec3 uv=2*cross(q.xyz,v);
@@ -143,3 +176,23 @@ Quat Quat_multQ(Quat a, Quat b){
 	);
 }	
 
+Quat Quat_fromAngleAxis(double angle, Vec3 axis){
+	Quat ret;
+	ret.w=cos(.5*angle);
+	ret.xyz=sin(.5*angle)*axis;
+	return ret;
+}
+
+void Quat_toAngleAxis(Quat q, double* angle, Vec3* axis){
+	double n2=dot(q.xyz,q.xyz); // squared norm
+	if(n2<DBL_EPSILON*DBL_EPSILON){ /* should never happen, since quaternions should be normalized */
+		*angle=0.;
+		*axis=(Vec3)(1,0,0);
+	} else {
+		*angle=2*acos(clamp(q.w,-1.,1.));
+		*axis=q.xyz/sqrt(n2);
+	}
+}
+
+#endif /* __OPENCL_VERSION__ */
+#endif /* _BASIC_MATH_CL */

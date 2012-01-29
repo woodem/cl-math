@@ -28,6 +28,10 @@ def orthonorm_c0(m):
 	y-=x*x.dot(y)
 	y.normalize()
 	return Matrix3(x,y,x.cross(y),cols=True)
+def rot_setYZ(locX):
+	locY=Vector3.UnitY if abs(locX[1])<abs(locX[2]) else Vector3.UnitZ
+	locY-=locX*locX.dot(locY)
+	return Matrix3(locX,locY,locX.cross(locY),cols=True)
 
 
 a=numpy.random.rand(N).astype(numpy.float64)
@@ -73,6 +77,7 @@ tests=[
 	CLTest('Mat3_multM','Mat3',('Mat3','Mat3'), 'c=Mat3_multM(a,b)',lambda a,b: a*b),
 	CLTest('Mat3_multV','Vec3',('Mat3','Vec3'), 'c=Mat3_multV(a,b)',lambda a,b: a*b),
 	CLTest('Mat3_orthonorm_c0','Mat3',('Mat3',None),'c=Mat3_orthonorm_c0(a)',lambda a,b: orthonorm_c0(a)),
+	CLTest('Mat3_rot_setYZ','Mat3',('Vec3',None),'c=Mat3_rot_setYZ(a)',lambda a,b: rot_setYZ(a)),
 	CLTest('Mat3_toQuat','Quat',('Mat3',None),'c=Mat3_toQuat(Mat3_orthonorm_c0(a))',lambda a,b: Quaternion(orthonorm_c0(a))),
 	CLTest('Quat_toMat3','Mat3',('Quat',None),'c=Quat_toMat3(normalize(a))', lambda a,b: a.normalized().toRotationMatrix()),
 	CLTest('Quat_rotate','Vec3',('Quat','Vec3'),'c=Quat_rotate(normalize(a),b);', lambda a,b: a.normalized().Rotate(b)),
@@ -80,9 +85,14 @@ tests=[
 	#
 	CLTest('Mat3_det','double',('Mat3',None),'c=Mat3_det(a)',lambda a,b: a.determinant()),
 	CLTest('Mat3_inv','Mat3',('Mat3',None),'c=Mat3_inv(a)',lambda a,b: a.inverse()),
+	#
+	CLTest('Quat_fromAngleAxis','Quat',('double','Vec3'),'c=Quat_fromAngleAxis(a,normalize(b))',lambda a,b: Quaternion(a,b.normalized())),
+	CLTest('Quat_toAngleAxis|angle','double',('Quat',None),'Vec3 foo; Quat_toAngleAxis(normalize(a),&c,&foo)',lambda a,b: a.normalized().toAngleAxis()[0]),
+	CLTest('Quat_toAngleAxis|axis','Vec3',('Quat',None),'double foo; Quat_toAngleAxis(normalize(a),&foo,&c)',lambda a,b: a.normalized().toAngleAxis()[1]),
 ]
 
 #tests=tests[-1:]
+dotStride=100
 
 for test in tests:
 	print 20*'=',test.name,20*'='
@@ -101,11 +111,12 @@ for test in tests:
 		D=test.numpyFunc(A,B) # call numpy on the args
 		# all elements exactly the same
 		if C==D:
-			if i%100==0: sys.stdout.write('.')
+			if i%dotStride==0: sys.stdout.write('.')
 		else:
 			if C.__class__==float: relErr=(C-D)/C
 			else: relErr=((C-D).norm()/C.norm())
-			if relErr<3e-14:  sys.stdout.write(':')
+			if relErr<3e-14:
+				if i%dotStride==0: sys.stdout.write(':')
 			elif relErr<1e-8: sys.stdout.write('[%g]'%relErr)
 			else:
 				print 20*'@','error (relative %g)'%relErr
