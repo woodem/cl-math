@@ -58,6 +58,8 @@ Mat3 Mat3_rot_setYZ(Vec3 locX);
 
 // http://en.wikipedia.org/wiki/Outer_product
 Mat3 Vec3_outer(Vec3 a, Vec3 b){ return Mat3_set(a.s0*b.s0,a.s0*b.s1,a.s0*b.s2,a.s1*b.s0,a.s1*b.s1,a.s1*b.s2,a.s2*b.s0,a.s2*b.s1,a.s2*b.s2); }
+// for host code compat
+Vec3 Vec3_set(Real x, Real y, Real z){ return (Vec3)(x,y,z); }
 
 Quat Quat_identity(){ return (Quat)(0,0,0,1); }
 Quat Quat_conjugate(Quat q){ return (Quat)(-q.x,-q.y,-q.z,q.w); }
