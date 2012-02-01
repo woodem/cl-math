@@ -7,17 +7,47 @@
 	#include<math.h>
 	#include<CL/cl.h>
 	#include<CL/cl_platform.h>
-	typedef cl_double Real;
-	typedef cl_double3 Vec3;
-	typedef cl_double4 Quat;
-	typedef cl_double16 Mat3;
+	#ifdef __cplusplus
+		#include<initializer_list>
+		// adapter from
+		// #include<boost/serialization/strong_typedef.hpp>
+		// operators == and < dropped
+		// initializer list ctor added to be source-compat with gcc-dialect syntax for vector types in c99
+		#define VECTOR_STRONG_TYPEDEF(T,D,numT,/*number of elements for initialization*/N) \
+			struct D { \
+				typedef numT Scalar; \
+				T t; \
+				explicit D(const T t_) : t(t_){}; \
+				D(){};\
+				D(const D & t_) : t(t_.t){}\
+				D(std::initializer_list<numT> l){if(l.size()!=N) throw std::runtime_error("Error assigning " #N " elements to " #D " in initialization"); int i=0; for(auto n: l) ((numT*)this)[i]=n; } \
+				D & operator=(const D & rhs) { t = rhs.t; return *this;}	\
+				D & operator=(const T & rhs) { t = rhs; return *this;}  \
+				operator T & () { return t; } \
+			};
+		typedef cl_double Real;
+		VECTOR_STRONG_TYPEDEF(cl_double3,Vec3,cl_double,3);
+		VECTOR_STRONG_TYPEDEF(cl_double4,Quat,cl_double,4);
+		VECTOR_STRONG_TYPEDEF(cl_double16,Mat3,cl_double,3);
+	#else
+		typedef cl_double Real;
+		typedef cl_double3 Vec3;
+		typedef cl_double4 Quat;
+		typedef cl_double16 Mat3;
+	#endif
 	// for initializing stuff in ctors from host code
 	Vec3 Vec3_set(Real x, Real y, Real z){ Vec3 ret={x,y,z}; return ret; }
 	Mat3 Mat3_set(Real a, Real b, Real c, Real d, Real e, Real f, Real g, Real h, Real i){ Mat3 ret={a,b,c,d,e,f,g,h,i}; return ret; }
 	Mat3 Mat3_identity(){ return Mat3_set(1,0,0,0,1,0,0,0,1); }
 	Quat Quat_identity(){ Quat ret={0,0,0,1}; return ret; }
 #else
-#pragma OPENCL EXTENSION cl_khr_fp64: enable
+#ifdef cl_khr_fp64
+	#pragma OPENCL EXTENSION cl_khr_fp64: enable
+#elif defined(cl_amd_fp64)
+	#pragma OPENCL EXTENSION cl_amd_fp64: enable
+#else
+	#error "Neiter of cl_khr_fp64/cl_amd_fp64 OpenCL extensions is supported."
+#endif
 // do we need this?
 typedef double Real;
 typedef double3  Vec3;
