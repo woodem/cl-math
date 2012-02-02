@@ -9,6 +9,8 @@
 	#include<CL/cl_platform.h>
 	#ifdef __cplusplus
 		#include<initializer_list>
+		#include<stdexcept>
+		#include<cassert>
 		// adapter from
 		// #include<boost/serialization/strong_typedef.hpp>
 		// operators == and < dropped
@@ -20,15 +22,20 @@
 				explicit D(const T t_) : t(t_){}; \
 				D(){};\
 				D(const D & t_) : t(t_.t){}\
-				D(std::initializer_list<numT> l){if(l.size()!=N) throw std::runtime_error("Error assigning " #N " elements to " #D " in initialization"); int i=0; for(auto n: l) ((numT*)this)[i]=n; } \
+				D(std::initializer_list<Scalar> l){ assert(l.size()==N); /*if(l.size()!=N) throw std::runtime_error("Error assigning " #N " elements to " #D " in initialization");*/ int i=0; for(auto n: l) ((Scalar*)this)[i++]=n; } \
 				D & operator=(const D & rhs) { t = rhs.t; return *this;}	\
 				D & operator=(const T & rhs) { t = rhs; return *this;}  \
+				Scalar& operator[](int ix){ assert(ix>=0 && ix<N); return ((Scalar*)this)[ix]; } \
+				const Scalar& operator[](int ix) const { assert(ix>=0 && ix<N); return ((Scalar*)this)[ix]; } \
 				operator T & () { return t; } \
 			};
 		typedef cl_double Real;
 		VECTOR_STRONG_TYPEDEF(cl_double3,Vec3,cl_double,3);
 		VECTOR_STRONG_TYPEDEF(cl_double4,Quat,cl_double,4);
-		VECTOR_STRONG_TYPEDEF(cl_double16,Mat3,cl_double,3);
+		VECTOR_STRONG_TYPEDEF(cl_double16,Mat3,cl_double,9);
+		std::ostream& operator<<(std::ostream &os, const Vec3& v){ os<<"("<<v[0]<<","<<v[1]<<","<<v[2]<<")"; }
+		std::ostream& operator<<(std::ostream &os, const Quat& v){ os<<"("<<v[0]<<","<<v[1]<<","<<v[2]<<v[3]<<")"; }
+		std::ostream& operator<<(std::ostream &os, const Mat3& m){ os<<"("<<m[0]<<","<<m[1]<<","<<m[2]<<", "<<m[3]<<","<<m[4]<<","<<m[5]<<", "<<m[6]<<","<<m[7]<<","<<m[8]<<")"; }
 	#else
 		typedef cl_double Real;
 		typedef cl_double3 Vec3;
@@ -42,12 +49,13 @@
 	Quat Quat_identity(){ Quat ret={0,0,0,1}; return ret; }
 #else
 #ifdef cl_khr_fp64
-	#pragma OPENCL EXTENSION cl_khr_fp64: enable
+	#pragma OPENCL EXTENSION cl_khr_fp64 : enable
 #elif defined(cl_amd_fp64)
-	#pragma OPENCL EXTENSION cl_amd_fp64: enable
+	#pragma OPENCL EXTENSION cl_amd_fp64 : enable
 #else
 	#error "Neiter of cl_khr_fp64/cl_amd_fp64 OpenCL extensions is supported."
 #endif
+
 // do we need this?
 typedef double Real;
 typedef double3  Vec3;
