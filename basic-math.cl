@@ -20,8 +20,8 @@
 				typedef numT Scalar; \
 				T t; \
 				explicit D(const T t_) : t(t_){}; \
-				D(){};\
-				D(const D & t_) : t(t_.t){}\
+				D(){}; \
+				D(const D & t_) : t(t_.t){} \
 				D(std::initializer_list<Scalar> l){ assert(l.size()==N); /*if(l.size()!=N) throw std::runtime_error("Error assigning " #N " elements to " #D " in initialization");*/ int i=0; for(auto n: l) ((Scalar*)this)[i++]=n; } \
 				D & operator=(const D & rhs) { t = rhs.t; return *this;}	\
 				D & operator=(const T & rhs) { t = rhs; return *this;}  \
@@ -195,6 +195,14 @@ Mat3 Mat3_orthonorm_c0(Mat3 m){
 	return Mat3_setCols(x,y,cross(x,y));
 }
 
+Mat3 Mat3_orthonorm_r0(Mat3 m){
+	Vec3 x=Mat3_row(m,0), y=Mat3_row(m,1);
+	x=normalize(x);
+	y=y-x*dot(x,y);
+	y=normalize(y);
+	return Mat3_setRows(x,y,cross(x,y));
+}
+
 Mat3 Mat3_rot_setYZ(Vec3 locX){
 	Vec3 locY=(fabs(locX.y)<fabs(locX.z))?Vec3_unitY():Vec3_unitZ();
 	locY-=locX*dot(locX,locY);
@@ -223,7 +231,16 @@ Quat Quat_fromAngleAxis(double angle, Vec3 axis){
 	return ret;
 }
 
+// #include"print.cl"
+
 void Quat_toAngleAxis(Quat q, double* angle, Vec3* axis){
+	/*
+	printNumArgs(a,b,c,d);
+	printNumArgs(a,b,c);
+	printNumArgs(a,b);
+	printNumArgs(a);
+	*/
+
 	double n2=dot(q.xyz,q.xyz); // squared norm
 	if(n2<DBL_EPSILON*DBL_EPSILON){ /* should never happen, since quaternions should be normalized */
 		*angle=0.;

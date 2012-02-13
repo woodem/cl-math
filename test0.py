@@ -37,7 +37,7 @@ def rot_setYZ(locX):
 a=numpy.random.rand(N).astype(numpy.float64)
 b=numpy.random.rand(N).astype(numpy.float64)
 
-ctx=cl.create_some_context(interactive=False)
+ctx=cl.create_some_context(interactive=True)
 queue=cl.CommandQueue(ctx)
 mf=cl.mem_flags
 
