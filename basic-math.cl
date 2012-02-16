@@ -90,7 +90,8 @@ Vec3 Mat3_multV(Mat3 a, Vec3 b){	return (Vec3)(dot(Mat3_row(a,0),b),dot(Mat3_row
 // matrix-matrix multiply
 Mat3 Mat3_multM(Mat3 a, Mat3 b); // impl below
 // Gram-Schmidt orthonormalization with stable 0th column
-Mat3 Mat3_orthonorm_c0(Mat3);  // impl below
+Mat3 Mat3_orthonorm_col0(Mat3);  // impl below
+Mat3 Mat3_orthonorm_row0(Mat3);  // impl below
 // set rotation matrix from local x-axis and orient the other two arbitrarily (aligned with global axes)
 Mat3 Mat3_rot_setYZ(Vec3 locX);
 
@@ -104,7 +105,7 @@ Quat Quat_conjugate(Quat q){ return (Quat)(-q.x,-q.y,-q.z,q.w); }
 Quat Mat3_toQuat(Mat3 rot); // impl below
 Vec3 Quat_rotate(Quat q, Vec3 v);
 Quat Quat_fromAngleAxis(double angle, Vec3 axis);
-Quat Quat_fromRotVec(Vec3 rot){ double n=length(rot); return Quat_fromAngleAxis(n,rot/n); }
+Quat Quat_fromRotVec(Vec3 rot){ double n=length(rot); return n>0.?Quat_fromAngleAxis(n,rot/n):Quat_identity(); }
 void Quat_toAngleAxis(Quat q, double* angle, Vec3* axis);
 Vec3 Quat_toRotVec(Quat q){ double angle; Vec3 axis; Quat_toAngleAxis(q,&angle,&axis); return angle*axis; }
 
@@ -187,7 +188,7 @@ Quat Mat3_toQuat(Mat3 rot){
 	return q;
 }
 
-Mat3 Mat3_orthonorm_c0(Mat3 m){
+Mat3 Mat3_orthonorm_col0(Mat3 m){
 	Vec3 x=Mat3_col(m,0), y=Mat3_col(m,1);
 	x=normalize(x);
 	y=y-x*dot(x,y);
@@ -195,7 +196,7 @@ Mat3 Mat3_orthonorm_c0(Mat3 m){
 	return Mat3_setCols(x,y,cross(x,y));
 }
 
-Mat3 Mat3_orthonorm_r0(Mat3 m){
+Mat3 Mat3_orthonorm_row0(Mat3 m){
 	Vec3 x=Mat3_row(m,0), y=Mat3_row(m,1);
 	x=normalize(x);
 	y=y-x*dot(x,y);
@@ -206,7 +207,7 @@ Mat3 Mat3_orthonorm_r0(Mat3 m){
 Mat3 Mat3_rot_setYZ(Vec3 locX){
 	Vec3 locY=(fabs(locX.y)<fabs(locX.z))?Vec3_unitY():Vec3_unitZ();
 	locY-=locX*dot(locX,locY);
-	return Mat3_setCols(locX,locY,cross(locX,locY));
+	return Mat3_setRows(locX,locY,cross(locX,locY));
 }
 
 
