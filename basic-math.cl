@@ -11,6 +11,7 @@
 		#include<initializer_list>
 		#include<stdexcept>
 		#include<cassert>
+		#include<iostream>
 		// adapter from
 		// #include<boost/serialization/strong_typedef.hpp>
 		// operators == and < dropped
@@ -48,6 +49,9 @@
 	Mat3 Mat3_identity(){ return Mat3_set(1,0,0,0,1,0,0,0,1); }
 	Quat Quat_identity(){ Quat ret={0,0,0,1}; return ret; }
 #else
+
+/* code for OpenCL device */
+
 #ifdef cl_khr_fp64
 	#pragma OPENCL EXTENSION cl_khr_fp64 : enable
 #elif defined(cl_amd_fp64)

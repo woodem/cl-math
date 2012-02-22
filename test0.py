@@ -22,16 +22,22 @@ def toNumpy(typeName,vec,i):
 	elif typeName=='double': return float(vec[i])
 	elif typeName=='Quat': return Quaternion(vec[i*4+3],vec[i*4],vec[i*4+1],vec[i*4+2])
 
-def orthonorm_c0(m):
+def orthonorm_col0(m):
 	x=m.col(0); y=m.col(1)
 	x.normalize()
 	y-=x*x.dot(y)
 	y.normalize()
 	return Matrix3(x,y,x.cross(y),cols=True)
+def orthonorm_row0(m):
+	x=m.row(0); y=m.row(1)
+	x.normalize()
+	y-=x*x.dot(y)
+	y.normalize()
+	return Matrix3(x,y,x.cross(y),cols=False)
 def rot_setYZ(locX):
 	locY=Vector3.UnitY if abs(locX[1])<abs(locX[2]) else Vector3.UnitZ
 	locY-=locX*locX.dot(locY)
-	return Matrix3(locX,locY,locX.cross(locY),cols=True)
+	return Matrix3(locX,locY,locX.cross(locY),cols=False)
 
 
 a=numpy.random.rand(N).astype(numpy.float64)
@@ -76,9 +82,10 @@ tests=[
 	CLTest('Vec3_outer','Mat3',('Vec3','Vec3'),  'c=Vec3_outer(a,b)',lambda a,b: a.outer(b)),
 	CLTest('Mat3_multM','Mat3',('Mat3','Mat3'), 'c=Mat3_multM(a,b)',lambda a,b: a*b),
 	CLTest('Mat3_multV','Vec3',('Mat3','Vec3'), 'c=Mat3_multV(a,b)',lambda a,b: a*b),
-	CLTest('Mat3_orthonorm_c0','Mat3',('Mat3',None),'c=Mat3_orthonorm_c0(a)',lambda a,b: orthonorm_c0(a)),
+	CLTest('Mat3_orthonorm_col0','Mat3',('Mat3',None),'c=Mat3_orthonorm_col0(a)',lambda a,b: orthonorm_col0(a)),
+	CLTest('Mat3_orthonorm_row0','Mat3',('Mat3',None),'c=Mat3_orthonorm_row0(a)',lambda a,b: orthonorm_row0(a)),
 	CLTest('Mat3_rot_setYZ','Mat3',('Vec3',None),'c=Mat3_rot_setYZ(a)',lambda a,b: rot_setYZ(a)),
-	CLTest('Mat3_toQuat','Quat',('Mat3',None),'c=Mat3_toQuat(Mat3_orthonorm_c0(a))',lambda a,b: Quaternion(orthonorm_c0(a))),
+	CLTest('Mat3_toQuat','Quat',('Mat3',None),'c=Mat3_toQuat(Mat3_orthonorm_row0(a))',lambda a,b: Quaternion(orthonorm_row0(a))),
 	CLTest('Quat_toMat3','Mat3',('Quat',None),'c=Quat_toMat3(normalize(a))', lambda a,b: a.normalized().toRotationMatrix()),
 	CLTest('Quat_rotate','Vec3',('Quat','Vec3'),'c=Quat_rotate(normalize(a),b);', lambda a,b: a.normalized().Rotate(b)),
 	CLTest('Quat_multQ','Quat',('Quat','Quat'),'c=Quat_multQ(normalize(a),normalize(b));', lambda a,b: a.normalized()*b.normalized()),
