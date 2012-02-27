@@ -34,9 +34,9 @@
 		VECTOR_STRONG_TYPEDEF(cl_double3,Vec3,cl_double,3);
 		VECTOR_STRONG_TYPEDEF(cl_double4,Quat,cl_double,4);
 		VECTOR_STRONG_TYPEDEF(cl_double16,Mat3,cl_double,9);
-		std::ostream& operator<<(std::ostream &os, const Vec3& v){ os<<"("<<v[0]<<","<<v[1]<<","<<v[2]<<")"; }
-		std::ostream& operator<<(std::ostream &os, const Quat& v){ os<<"("<<v[0]<<","<<v[1]<<","<<v[2]<<v[3]<<")"; }
-		std::ostream& operator<<(std::ostream &os, const Mat3& m){ os<<"("<<m[0]<<","<<m[1]<<","<<m[2]<<", "<<m[3]<<","<<m[4]<<","<<m[5]<<", "<<m[6]<<","<<m[7]<<","<<m[8]<<")"; }
+		static std::ostream& operator<<(std::ostream &os, const Vec3& v){ os<<"("<<v[0]<<","<<v[1]<<","<<v[2]<<")"; }
+		static std::ostream& operator<<(std::ostream &os, const Quat& v){ os<<"("<<v[0]<<","<<v[1]<<","<<v[2]<<v[3]<<")"; }
+		static std::ostream& operator<<(std::ostream &os, const Mat3& m){ os<<"("<<m[0]<<","<<m[1]<<","<<m[2]<<", "<<m[3]<<","<<m[4]<<","<<m[5]<<", "<<m[6]<<","<<m[7]<<","<<m[8]<<")"; }
 	#else
 		typedef cl_double Real;
 		typedef cl_double3 Vec3;
@@ -44,10 +44,10 @@
 		typedef cl_double16 Mat3;
 	#endif
 	// for initializing stuff in ctors from host code
-	Vec3 Vec3_set(Real x, Real y, Real z){ Vec3 ret={x,y,z}; return ret; }
-	Mat3 Mat3_set(Real a, Real b, Real c, Real d, Real e, Real f, Real g, Real h, Real i){ Mat3 ret={a,b,c,d,e,f,g,h,i}; return ret; }
-	Mat3 Mat3_identity(){ return Mat3_set(1,0,0,0,1,0,0,0,1); }
-	Quat Quat_identity(){ Quat ret={0,0,0,1}; return ret; }
+	inline Vec3 Vec3_set(Real x, Real y, Real z){ Vec3 ret={x,y,z}; return ret; }
+	inline Mat3 Mat3_set(Real a, Real b, Real c, Real d, Real e, Real f, Real g, Real h, Real i){ Mat3 ret={a,b,c,d,e,f,g,h,i}; return ret; }
+	inline Mat3 Mat3_identity(){ return Mat3_set(1,0,0,0,1,0,0,0,1); }
+	inline Quat Quat_identity(){ Quat ret={0,0,0,1}; return ret; }
 #else
 
 /* code for OpenCL device */
