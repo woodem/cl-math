@@ -34,9 +34,9 @@
 		VECTOR_STRONG_TYPEDEF(cl_double3,Vec3,cl_double,3);
 		VECTOR_STRONG_TYPEDEF(cl_double4,Quat,cl_double,4);
 		VECTOR_STRONG_TYPEDEF(cl_double16,Mat3,cl_double,9);
-		static std::ostream& operator<<(std::ostream &os, const Vec3& v){ os<<"("<<v[0]<<","<<v[1]<<","<<v[2]<<")"; }
-		static std::ostream& operator<<(std::ostream &os, const Quat& v){ os<<"("<<v[0]<<","<<v[1]<<","<<v[2]<<v[3]<<")"; }
-		static std::ostream& operator<<(std::ostream &os, const Mat3& m){ os<<"("<<m[0]<<","<<m[1]<<","<<m[2]<<", "<<m[3]<<","<<m[4]<<","<<m[5]<<", "<<m[6]<<","<<m[7]<<","<<m[8]<<")"; }
+		static std::ostream& operator<<(std::ostream &os, const Vec3& v){ os<<"("<<v[0]<<","<<v[1]<<","<<v[2]<<")"; return os; }
+		static std::ostream& operator<<(std::ostream &os, const Quat& v){ os<<"("<<v[0]<<","<<v[1]<<","<<v[2]<<v[3]<<")"; return os; }
+		static std::ostream& operator<<(std::ostream &os, const Mat3& m){ os<<"("<<m[0]<<","<<m[1]<<","<<m[2]<<", "<<m[3]<<","<<m[4]<<","<<m[5]<<", "<<m[6]<<","<<m[7]<<","<<m[8]<<")"; return os; }
 	#else
 		typedef cl_double Real;
 		typedef cl_double3 Vec3;
