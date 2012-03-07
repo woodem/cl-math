@@ -209,8 +209,8 @@ Mat3 Mat3_orthonorm_row0(Mat3 m){
 }
 
 Mat3 Mat3_rot_setYZ(Vec3 locX){
-	Vec3 locY=(fabs(locX.y)<fabs(locX.z))?Vec3_unitY():Vec3_unitZ();
-	locY-=locX*dot(locX,locY);
+	Vec3 locY=cross(locX,(fabs(locX.y)<fabs(locX.z))?Vec3_unitY():Vec3_unitZ());
+	locY=normalize(locY-locX*dot(locX,locY));
 	return Mat3_setRows(locX,locY,cross(locX,locY));
 }
 

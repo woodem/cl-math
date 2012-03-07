@@ -35,8 +35,8 @@ def orthonorm_row0(m):
 	y.normalize()
 	return Matrix3(x,y,x.cross(y),cols=False)
 def rot_setYZ(locX):
-	locY=Vector3.UnitY if abs(locX[1])<abs(locX[2]) else Vector3.UnitZ
-	locY-=locX*locX.dot(locY)
+	locY=locX.cross(Vector3.UnitY if abs(locX[1])<abs(locX[2]) else Vector3.UnitZ)
+	locY=(locY-locX*locX.dot(locY)).normalized()
 	return Matrix3(locX,locY,locX.cross(locY),cols=False)
 
 
