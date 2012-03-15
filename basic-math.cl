@@ -48,6 +48,8 @@
 	inline Mat3 Mat3_set(Real a, Real b, Real c, Real d, Real e, Real f, Real g, Real h, Real i){ Mat3 ret={a,b,c,d,e,f,g,h,i}; return ret; }
 	inline Mat3 Mat3_identity(){ return Mat3_set(1,0,0,0,1,0,0,0,1); }
 	inline Quat Quat_identity(){ Quat ret={0,0,0,1}; return ret; }
+	inline Quat Quat_set_wxyz(Real w, Real x, Real y, Real z){ Quat ret={x,y,z,w}; return ret; } // order used by eigen
+	inline Quat Quat_set_xyzw(Real x, Real y, Real z, Real w){ Quat ret={x,y,z,w}; return ret; }
 #else
 
 /* code for OpenCL device */
@@ -105,6 +107,8 @@ Mat3 Vec3_outer(Vec3 a, Vec3 b){ return Mat3_set(a.s0*b.s0,a.s0*b.s1,a.s0*b.s2,a
 Vec3 Vec3_set(Real x, Real y, Real z){ return (Vec3)(x,y,z); }
 
 Quat Quat_identity(){ return (Quat)(0,0,0,1); }
+Quat Quat_set_wxyz(Real w, Real x, Real y, Real z){ return (Quat)(x,y,z,w); } // order used by eigen
+Quat Quat_set_xyzw(Real x, Real y, Real z, Real w){ return (Quat)(x,y,z,w); }
 Quat Quat_conjugate(Quat q){ return (Quat)(-q.x,-q.y,-q.z,q.w); }
 Quat Mat3_toQuat(Mat3 rot); // impl below
 Vec3 Quat_rotate(Quat q, Vec3 v);
