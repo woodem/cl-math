@@ -34,9 +34,26 @@
 		VECTOR_STRONG_TYPEDEF(cl_double3,Vec3,cl_double,3);
 		VECTOR_STRONG_TYPEDEF(cl_double4,Quat,cl_double,4);
 		VECTOR_STRONG_TYPEDEF(cl_double16,Mat3,cl_double,9);
+
+		// steam ops
 		static std::ostream& operator<<(std::ostream &os, const Vec3& v){ os<<"("<<v[0]<<","<<v[1]<<","<<v[2]<<")"; return os; }
 		static std::ostream& operator<<(std::ostream &os, const Quat& v){ os<<"("<<v[0]<<","<<v[1]<<","<<v[2]<<v[3]<<")"; return os; }
 		static std::ostream& operator<<(std::ostream &os, const Mat3& m){ os<<"("<<m[0]<<","<<m[1]<<","<<m[2]<<", "<<m[3]<<","<<m[4]<<","<<m[5]<<", "<<m[6]<<","<<m[7]<<","<<m[8]<<")"; return os; }
+
+		// serialization
+		// (should be somehow made optional)
+		#include<boost/serialization/nvp.hpp>
+		#include<boost/serialization/is_bitwise_serializable.hpp>
+		BOOST_IS_BITWISE_SERIALIZABLE(Vec3);
+		BOOST_IS_BITWISE_SERIALIZABLE(Quat);
+		BOOST_IS_BITWISE_SERIALIZABLE(Mat3);
+		template<class Archive> void serialize(Archive &ar, Vec3& v, const unsigned version){ ar & boost::serialization::make_nvp("x",v[0]); ar & boost::serialization::make_nvp("y",v[1]); ar & boost::serialization::make_nvp("z",v[2]); }
+		template<class Archive> void serialize(Archive &ar, Quat& q, const unsigned version){ ar & boost::serialization::make_nvp("x",q[0]); ar & boost::serialization::make_nvp("y",q[1]); ar & boost::serialization::make_nvp("z",q[2]); ar & boost::serialization::make_nvp("w",q[3]); }
+		template<class Archive> void serialize(Archive &ar, Mat3& m, const unsigned version){
+			ar & boost::serialization::make_nvp("m00",m[0]); ar & boost::serialization::make_nvp("m01",m[1]); ar & boost::serialization::make_nvp("m02",m[2]);
+			ar & boost::serialization::make_nvp("m10",m[3]); ar & boost::serialization::make_nvp("m11",m[4]); ar & boost::serialization::make_nvp("m12",m[5]);
+			ar & boost::serialization::make_nvp("m20",m[6]); ar & boost::serialization::make_nvp("m21",m[7]); ar & boost::serialization::make_nvp("m22",m[8]);
+		}
 	#else
 		typedef cl_double Real;
 		typedef cl_double3 Vec3;
