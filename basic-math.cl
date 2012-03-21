@@ -129,6 +129,7 @@ Quat Quat_set_xyzw(Real x, Real y, Real z, Real w){ return (Quat)(x,y,z,w); }
 Quat Quat_conjugate(Quat q){ return (Quat)(-q.x,-q.y,-q.z,q.w); }
 Quat Mat3_toQuat(Mat3 rot); // impl below
 Vec3 Quat_rotate(Quat q, Vec3 v);
+Quat Quat_dDt(Quat q, Vec3 angVel);
 Quat Quat_fromAngleAxis(double angle, Vec3 axis);
 Quat Quat_fromRotVec(Vec3 rot){ double n=length(rot); return n>0.?Quat_fromAngleAxis(n,rot/n):Quat_identity(); }
 void Quat_toAngleAxis(Quat q, double* angle, Vec3* axis);
@@ -240,6 +241,17 @@ Vec3 Quat_rotate(Quat q, Vec3 v){
 	Vec3 uv=2*cross(q.xyz,v);
 	return v+q.w*uv+cross(q.xyz,uv);
 }
+
+// http://www.euclideanspace.com/physics/kinematics/angularvelocity/QuaternionDifferentiation2.pdf
+Quat Quat_dDt(Quat q, Vec3 a){
+	Quat ret;
+	ret.w=(-q.x*a.x-q.y*a.y-q.z*a.z)/2.;
+	ret.x=( q.w*a.x-q.z*a.y+q.y*a.z)/2.;
+	ret.y=( q.z*a.x+q.w*a.y-q.x*a.z)/2.;
+	ret.z=(-q.y*a.x+q.x*a.y+q.w*a.z)/2.;
+	return ret;
+}
+
 
 Quat Quat_multQ(Quat a, Quat b){
 	return (Quat)(
