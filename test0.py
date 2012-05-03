@@ -105,7 +105,7 @@ for test in tests:
 	print 20*'=',test.name,20*'='
 	src='''
 		#include<basic-math.cl>
-		kernel void test(global {typeC} *cc, global const {typeA} *aa, global const {typeB} /**/ *bb){{ int gid=get_global_id(0); {typeA} __attribute__((unused)) a=aa[gid]; {typeB} __attribute__((unused)) b=bb[gid]; {typeC} c; {clCode}; cc[gid]=c; }}
+		kernel void test(global {typeC}* cc, global const {typeA} *aa, global const {typeB} /**/ *bb){{ int gid=get_global_id(0); {typeA} __attribute__((unused)) a=aa[gid]; {typeB} __attribute__((unused)) b=bb[gid]; {typeC} c; {clCode}; cc[gid]=c; }}
 	'''.format(typeA=(test.inTypes[0] if test.inTypes[0] else 'double'),typeB=(test.inTypes[1] if test.inTypes[1] else 'double'),typeC=test.outType,clCode=test.clCode)	
 	prg=cl.Program(ctx,src).build(options="-I.")
 	prg.test(queue,(a.shape[0]/align,),None,cBuf,aBuf,bBuf) # we pass uselessly aBuf, bBuf even if they are unused

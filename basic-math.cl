@@ -12,6 +12,10 @@
 		#include<stdexcept>
 		#include<cassert>
 		#include<iostream>
+		#include<boost/foreach.hpp>
+		#ifndef FOREACH
+			#define FOREACH BOOST_FOREACH
+		#endif
 		// adapter from
 		// #include<boost/serialization/strong_typedef.hpp>
 		// operators == and < dropped
@@ -23,7 +27,7 @@
 				explicit D(const T t_) : t(t_){}; \
 				D(){}; \
 				D(const D & t_) : t(t_.t){} \
-				D(std::initializer_list<Scalar> l){ assert(l.size()==N); /*if(l.size()!=N) throw std::runtime_error("Error assigning " #N " elements to " #D " in initialization");*/ int i=0; for(auto n: l) ((Scalar*)this)[i++]=n; } \
+				D(std::initializer_list<Scalar> l){ assert(l.size()==N); /*if(l.size()!=N) throw std::runtime_error("Error assigning " #N " elements to " #D " in initialization");*/ int i=0; /*for(auto n: l)*/FOREACH(Scalar n, l) ((Scalar*)this)[i++]=n; } \
 				D & operator=(const D & rhs) { t = rhs.t; return *this;}	\
 				D & operator=(const T & rhs) { t = rhs; return *this;}  \
 				Scalar& operator[](int ix){ assert(ix>=0 && ix<N); return ((Scalar*)this)[ix]; } \
